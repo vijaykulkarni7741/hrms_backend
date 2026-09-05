@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: HRMS
+  docker:
+    compose:
+      enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/hrms?options=-c%20timezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:vijay_kulkarni}
+    password: ${SPRING_DATASOURCE_PASSWORD:Vijay@9545}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+  sql:
+    init:
+      mode: always
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      expiration: 86400000 # 24 hours in milliseconds
+      session-ttl-seconds: 86400 # 24 hours in seconds
