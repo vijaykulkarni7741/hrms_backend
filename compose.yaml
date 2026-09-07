@@ -1,13 +1,92 @@
+version: '3.8'
+
 services:
+  # ==========================================
+  # 1. PostgreSQL Database Service
+  # ==========================================
   postgres:
-    image: 'postgres:latest'
+    image: postgres:15-alpine
+    container_name: hrms_postgres
+    restart: always
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=vijay_kulkarni'
+      POSTGRES_DB: hrms
+      POSTGRES_USER: vijay_kulkarni
+      POSTGRES_PASSWORD: Vijay@9545
     ports:
-      - '5432'
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vijay_kulkarni -d hrms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ==========================================
+  # 2. Redis Session Cache Service
+  # ==========================================
   redis:
-    image: 'redis:latest'
+    image: redis:7-alpine
+    container_name: hrms_redis
+    restart: always
     ports:
-      - '6379'
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # ==========================================
+  # 3. Spring Boot Backend API Service
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hrms_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hrms?options=-c%20timezone=UTC
+      SPRING_DATASOURCE_USERNAME: vijay_kulkarni
+      SPRING_DATASOURCE_PASSWORD: Vijay@9545
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v3/api-docs || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ==========================================
+  # 4. Angular Frontend Web Service (Nginx)
+  # ==========================================
+  frontend:
+    build:
+      context: ./hrms-frontend
+      dockerfile: Dockerfile
+    container_name: hrms_frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
