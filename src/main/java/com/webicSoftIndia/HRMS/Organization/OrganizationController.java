@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/organizations")
+@RequestMapping({"/api/v1/organizations", "/v1/organizations", "/api/v1/company", "/v1/company", "/api/v1/admin/company", "/v1/admin/company", "/admin/company"})
 @RequiredArgsConstructor
 public class OrganizationController {
 

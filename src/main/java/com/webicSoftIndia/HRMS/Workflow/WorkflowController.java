@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/workflows")
+@RequestMapping({"/api/v1/workflows", "/v1/workflows", "/api/v1/workflow", "/v1/workflow"})
 @RequiredArgsConstructor
 public class WorkflowController {
 

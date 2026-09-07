@@ -52,14 +52,29 @@ public class Policy {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "created_by", updatable = false, length = 50)
+    @Column(name = "policy_code", length = 50)
+    private String policyCode;
+
+    @Column(name = "version_number", length = 20)
+    private String versionNumber;
+
+    @Column(name = "effective_date")
+    private LocalDateTime effectiveDate;
+
+    @Column(name = "approved_by", length = 100)
+    private String approvedBy;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
+    @Column(name = "created_by", updatable = false, length = 100)
     private String createdBy;
 
     @CreationTimestamp
     @Column(name = "created_date", updatable = false, nullable = false)
     private LocalDateTime createdDate;
 
-    @Column(name = "updated_by", length = 50)
+    @Column(name = "updated_by", length = 100)
     private String updatedBy;
 
     @UpdateTimestamp

@@ -38,11 +38,7 @@ build/
 # ===========================
 # Angular / Node.js
 # ===========================
-hrms-frontend/node_modules/
-hrms-frontend/dist/
-hrms-frontend/.angular/
-hrms-frontend/.cache/
-hrms-frontend/coverage/
+hrms-frontend/
 
 # NPM
 npm-debug.log*

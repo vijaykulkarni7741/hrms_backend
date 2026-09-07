@@ -9,15 +9,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/leave-types")
+@RequestMapping({"/api/v1/leave-types", "/v1/leave-types", "/api/v1/leave/types", "/v1/leave/types"})
 @RequiredArgsConstructor
 public class LeaveTypeController {
 
     private final LeaveTypeService leaveTypeService;
 
-    @PostMapping("/create")
+    @PostMapping({"/create", "/update", "/save", "/add"})
     public ResponseEntity<ApiResponse<LeaveType>> createOrUpdateLeaveType(@RequestBody LeaveType leaveType) {
         ApiResponse<LeaveType> response = leaveTypeService.saveOrUpdateLeaveType(leaveType);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping({"/delete", "/remove"})
+    public ResponseEntity<ApiResponse<Void>> deleteLeaveType(@RequestBody IdRequest request) {
+        Long id = request != null ? request.getId() : null;
+        ApiResponse<Void> response = leaveTypeService.deleteLeaveType(id);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
@@ -36,7 +47,7 @@ public class LeaveTypeController {
         }
     }
 
-    @PostMapping("/list")
+    @PostMapping({"/list", "/all"})
     public ResponseEntity<ApiResponse<List<LeaveType>>> listLeaveTypes(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
             @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,

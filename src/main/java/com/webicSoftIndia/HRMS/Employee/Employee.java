@@ -17,9 +17,7 @@ import com.webicSoftIndia.HRMS.Grade.Grade;
 import com.webicSoftIndia.HRMS.Role.Role;
 
 @Entity
-@Table(
-        name = "employees",
-        indexes = {
+@Table(name = "employees", indexes = {
                 @Index(name = "idx_emp_code", columnList = "employee_code", unique = true),
                 @Index(name = "idx_emp_org", columnList = "organization_id"),
                 @Index(name = "idx_emp_unit", columnList = "unit_id"),
@@ -27,8 +25,7 @@ import com.webicSoftIndia.HRMS.Role.Role;
                 @Index(name = "idx_emp_desig", columnList = "designation_id"),
                 @Index(name = "idx_emp_pan", columnList = "pan_number"),
                 @Index(name = "idx_emp_biometric", columnList = "biometric_id")
-        }
-)
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,186 +33,195 @@ import com.webicSoftIndia.HRMS.Role.Role;
 @Builder
 public class Employee {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "id", updatable = false, nullable = false)
+        private Long id;
 
-    @Column(name = "employee_code", nullable = false, unique = true, length = 50)
-    private String employeeCode;
+        @Column(name = "employee_code", nullable = false, unique = true, length = 50)
+        private String employeeCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false, foreignKey = @ForeignKey(name = "fk_emp_organization"))
-    private Organization organization;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "organization_id", nullable = false, foreignKey = @ForeignKey(name = "fk_emp_organization"))
+        private Organization organization;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id", nullable = false, foreignKey = @ForeignKey(name = "fk_emp_unit"))
-    private Unit unit;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "unit_id", nullable = false, foreignKey = @ForeignKey(name = "fk_emp_unit"))
+        private Unit unit;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", foreignKey = @ForeignKey(name = "fk_emp_department"))
-    private Department department;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "department_id", foreignKey = @ForeignKey(name = "fk_emp_department"))
+        private Department department;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "designation_id", foreignKey = @ForeignKey(name = "fk_emp_designation"))
-    private Designation designation;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "designation_id", foreignKey = @ForeignKey(name = "fk_emp_designation"))
+        private Designation designation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grade_id", foreignKey = @ForeignKey(name = "fk_emp_grade"))
-    private Grade grade;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "grade_id", foreignKey = @ForeignKey(name = "fk_emp_grade"))
+        private Grade grade;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_emp_role"))
-    private Role role;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_emp_role"))
+        private Role role;
 
-    @Column(name = "cost_center_id")
-    private Long costCenterId;
+        @Column(name = "cost_center_id")
+        private Long costCenterId;
 
-    @Column(name = "branch_id")
-    private Long branchId;
+        @Column(name = "branch_id")
+        private Long branchId;
 
-    @Column(name = "manager_id")
-    private Long managerId;
+        @Column(name = "manager_id")
+        private Long managerId;
 
-    @Column(name = "reporting_manager_id")
-    private Long reportingManagerId;
+        @Column(name = "reporting_manager_id")
+        private Long reportingManagerId;
 
-    @Column(name = "employee_type", length = 50)
-    private String employeeType;
+        @Column(name = "working_manager_id")
+        private Long workingManagerId;
 
-    @Column(name = "employment_status", length = 50)
-    private String employmentStatus;
+        @Column(name = "employee_type", length = 50)
+        private String employeeType;
 
-    @Column(name = "joining_date")
-    private LocalDate joiningDate;
+        @Column(name = "employment_status", length = 50)
+        private String employmentStatus;
 
-    @Column(name = "confirmation_date")
-    private LocalDate confirmationDate;
+        @Column(name = "joining_date")
+        private LocalDate joiningDate;
 
-    @Column(name = "exit_date")
-    private LocalDate exitDate;
+        @Column(name = "confirmation_date")
+        private LocalDate confirmationDate;
 
-    @Column(name = "title", length = 20)
-    private String title;
+        @Column(name = "exit_date")
+        private LocalDate exitDate;
 
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
+        @Column(name = "title", length = 20)
+        private String title;
 
-    @Column(name = "middle_name", length = 100)
-    private String middleName;
+        @Column(name = "first_name", nullable = false, length = 100)
+        private String firstName;
 
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+        @Column(name = "middle_name", length = 100)
+        private String middleName;
 
-    @Column(name = "gender", length = 20)
-    private String gender;
+        @Column(name = "last_name", nullable = false, length = 100)
+        private String lastName;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+        @Column(name = "gender", length = 20)
+        private String gender;
 
-    @Column(name = "blood_group", length = 10)
-    private String bloodGroup;
+        @Column(name = "date_of_birth")
+        private LocalDate dateOfBirth;
 
-    @Column(name = "marital_status", length = 20)
-    private String maritalStatus;
+        @Column(name = "blood_group", length = 10)
+        private String bloodGroup;
 
-    @Column(name = "nationality", length = 50)
-    private String nationality;
+        @Column(name = "marital_status", length = 20)
+        private String maritalStatus;
 
-    @Column(name = "religion", length = 50)
-    private String religion;
+        @Column(name = "nationality", length = 50)
+        private String nationality;
 
-    @Column(name = "aadhaar_number", length = 20)
-    private String aadhaarNumber;
+        @Column(name = "religion", length = 50)
+        private String religion;
 
-    @Column(name = "pan_number", length = 10)
-    private String panNumber;
+        @Column(name = "aadhaar_number", length = 20)
+        private String aadhaarNumber;
 
-    @Column(name = "passport_number", length = 30)
-    private String passportNumber;
+        @Column(name = "pan_number", length = 10)
+        private String panNumber;
 
-    @Column(name = "driving_license_number", length = 50)
-    private String drivingLicenseNumber;
+        @Column(name = "passport_number", length = 30)
+        private String passportNumber;
 
-    @Column(name = "email", length = 100)
-    private String email;
+        @Column(name = "driving_license_number", length = 50)
+        private String drivingLicenseNumber;
 
-    @Column(name = "official_email", length = 100)
-    private String officialEmail;
+        @Column(name = "email", length = 100)
+        private String email;
 
-    @Column(name = "mobile_number", length = 20)
-    private String mobileNumber;
+        @Column(name = "official_email", length = 100)
+        private String officialEmail;
 
-    @Column(name = "alternate_mobile", length = 20)
-    private String alternateMobile;
+        @Column(name = "mobile_number", length = 20)
+        private String mobileNumber;
 
-    @Column(name = "emergency_contact_name", length = 100)
-    private String emergencyContactName;
+        @Column(name = "alternate_mobile", length = 20)
+        private String alternateMobile;
 
-    @Column(name = "emergency_contact_number", length = 20)
-    private String emergencyContactNumber;
+        @Column(name = "emergency_contact_name", length = 100)
+        private String emergencyContactName;
 
-    @Column(name = "profile_photo", length = 500)
-    private String profilePhoto;
+        @Column(name = "emergency_contact_number", length = 20)
+        private String emergencyContactNumber;
 
-    @Column(name = "signature_image", length = 500)
-    private String signatureImage;
+        @Column(name = "profile_photo", length = 500)
+        private String profilePhoto;
 
-    @Column(name = "biometric_id", length = 50)
-    private String biometricId;
+        @Column(name = "signature_image", length = 500)
+        private String signatureImage;
 
-    @Column(name = "shift_id")
-    private Long shiftId;
+        @Column(name = "biometric_id", length = 50)
+        private String biometricId;
 
-    @Column(name = "holiday_calendar_id")
-    private Long holidayCalendarId;
+        @Column(name = "shift_id")
+        private Long shiftId;
 
-    @Column(name = "bank_account_id")
-    private Long bankAccountId;
+        @Column(name = "holiday_calendar_id")
+        private Long holidayCalendarId;
 
-    @Column(name = "pf_number", length = 50)
-    private String pfNumber;
+        @Column(name = "bank_account_id")
+        private Long bankAccountId;
 
-    @Column(name = "esi_number", length = 50)
-    private String esiNumber;
+        @Column(name = "pf_number", length = 50)
+        private String pfNumber;
 
-    @Column(name = "uan_number", length = 50)
-    private String uanNumber;
+        @Column(name = "esi_number", length = 50)
+        private String esiNumber;
 
-    @Column(name = "salary_structure_id")
-    private Long salaryStructureId;
+        @Column(name = "uan_number", length = 50)
+        private String uanNumber;
 
-    @Column(name = "notice_period")
-    private Integer noticePeriod;
+        @Column(name = "salary_structure_id")
+        private Long salaryStructureId;
 
-    @Column(name = "probation_period")
-    private Integer probationPeriod;
+        @Column(name = "notice_period")
+        private Integer noticePeriod;
 
-    @Column(name = "work_location", length = 100)
-    private String workLocation;
+        @Column(name = "probation_period")
+        private Integer probationPeriod;
 
-    @Builder.Default
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+        @Column(name = "work_location", length = 100)
+        private String workLocation;
 
-    @Column(name = "remarks", length = 500)
-    private String remarks;
+        @Column(name = "week_off_day_1", length = 20)
+        private String weekOffDay1;
 
-    @Column(name = "created_by", updatable = false, length = 50)
-    private String createdBy;
+        @Column(name = "week_off_day_2", length = 20)
+        private String weekOffDay2;
 
-    @CreationTimestamp
-    @Column(name = "created_date", updatable = false, nullable = false)
-    private LocalDateTime createdDate;
+        @Builder.Default
+        @Column(name = "is_active", nullable = false)
+        private Boolean isActive = true;
 
-    @Column(name = "updated_by", length = 50)
-    private String updatedBy;
+        @Column(name = "remarks", length = 500)
+        private String remarks;
 
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private LocalDateTime updatedDate;
+        @Column(name = "created_by", updatable = false, length = 50)
+        private String createdBy;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
+        @CreationTimestamp
+        @Column(name = "created_date", updatable = false, nullable = false)
+        private LocalDateTime createdDate;
+
+        @Column(name = "updated_by", length = 50)
+        private String updatedBy;
+
+        @UpdateTimestamp
+        @Column(name = "updated_date")
+        private LocalDateTime updatedDate;
+
+        @Version
+        @Column(name = "version")
+        private Long version;
 }

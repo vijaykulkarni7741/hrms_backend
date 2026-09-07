@@ -106,23 +106,25 @@ public class DepartmentService {
         return ApiResponse.success("Department active status toggled successfully to " + newStatus, updated);
     }
 
+    @Transactional
+    public void deleteDepartment(Long id) {
+        if (id != null && departmentRepository.existsById(id)) {
+            departmentRepository.deleteById(id);
+        }
+    }
+
     @Transactional(readOnly = true)
     public ApiResponse<List<Department>> getDepartmentsBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
-        }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
-        Long unitId = sessionData.getUnitId();
         List<Department> list;
-        if (unitId != null && unitId > 0) {
-            list = departmentRepository.findByUnitId(unitId);
-        } else {
-            list = departmentRepository.findAll();
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                list = departmentRepository.findByUnitId(sessionData.getUnitId());
+                return ApiResponse.success("Departments retrieved successfully", list);
+            }
         }
-        return ApiResponse.success("Departments retrieved successfully for unit ID: " + unitId, list);
+        list = departmentRepository.findAll();
+        return ApiResponse.success("Departments retrieved successfully", list);
     }
 }
+

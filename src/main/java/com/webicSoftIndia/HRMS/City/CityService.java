@@ -88,14 +88,12 @@ public class CityService {
 
     @Transactional(readOnly = true)
     public ApiResponse<List<City>> getCitiesBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                // Could filter by unit in the future
+            }
         }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
         List<City> list = cityRepository.findAll();
         return ApiResponse.success("Cities retrieved successfully", list);
     }

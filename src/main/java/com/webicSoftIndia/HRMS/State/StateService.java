@@ -95,14 +95,12 @@ public class StateService {
 
     @Transactional(readOnly = true)
     public ApiResponse<List<State>> getStatesBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                // Return states
+            }
         }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
         List<State> list = stateRepository.findAll();
         return ApiResponse.success("States retrieved successfully", list);
     }

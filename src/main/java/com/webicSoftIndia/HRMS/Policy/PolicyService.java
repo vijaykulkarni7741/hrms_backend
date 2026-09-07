@@ -111,6 +111,55 @@ public class PolicyService {
         return ApiResponse.success("Policies retrieved successfully", list);
     }
 
+    @Transactional
+    public ApiResponse<Policy> submitForApproval(Long id, String username) {
+        if (id == null || id <= 0) return ApiResponse.error("Valid Policy ID is required");
+        Policy policy = policyRepository.findById(id).orElse(null);
+        if (policy == null) return ApiResponse.error("Policy not found with ID: " + id);
+
+        policy.setStatus("PENDING_APPROVAL");
+        policy.setUpdatedBy(username);
+        Policy saved = policyRepository.save(policy);
+        logHistory(saved, "SUBMIT_APPROVAL", "Submitted for HR Manager approval by " + username);
+        return ApiResponse.success("Policy submitted for approval successfully", saved);
+    }
+
+    @Transactional
+    public ApiResponse<Policy> approvePolicy(Long id, String approvedBy) {
+        if (id == null || id <= 0) return ApiResponse.error("Valid Policy ID is required");
+        Policy policy = policyRepository.findById(id).orElse(null);
+        if (policy == null) return ApiResponse.error("Policy not found with ID: " + id);
+
+        policy.setStatus("APPROVED");
+        policy.setIsActive(true);
+        policy.setApprovedBy(approvedBy);
+        policy.setUpdatedBy(approvedBy);
+        Policy saved = policyRepository.save(policy);
+        logHistory(saved, "APPROVE", "Approved by HR Manager: " + approvedBy);
+        return ApiResponse.success("Policy approved successfully", saved);
+    }
+
+    @Transactional
+    public ApiResponse<Policy> rejectPolicy(Long id, String rejectedBy, String reason) {
+        if (id == null || id <= 0) return ApiResponse.error("Valid Policy ID is required");
+        Policy policy = policyRepository.findById(id).orElse(null);
+        if (policy == null) return ApiResponse.error("Policy not found with ID: " + id);
+
+        policy.setStatus("REJECTED");
+        policy.setIsActive(false);
+        policy.setRejectionReason(reason);
+        policy.setUpdatedBy(rejectedBy);
+        Policy saved = policyRepository.save(policy);
+        logHistory(saved, "REJECT", "Rejected by HR Manager (" + rejectedBy + "). Reason: " + reason);
+        return ApiResponse.success("Policy rejected successfully", saved);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<Policy>> getAllPolicies() {
+        List<Policy> list = policyRepository.findAll();
+        return ApiResponse.success("Policies retrieved successfully", list);
+    }
+
     private void logHistory(Policy policy, String action, String changeDetails) {
         try {
             PolicyHistory history = PolicyHistory.builder()

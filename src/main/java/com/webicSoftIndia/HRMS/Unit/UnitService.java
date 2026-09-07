@@ -135,23 +135,20 @@ public class UnitService {
 
     @Transactional(readOnly = true)
     public ApiResponse<List<Unit>> getUnitsBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
-        }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
-        Long sessionUnitId = sessionData.getUnitId();
         List<Unit> list;
-        if (sessionUnitId != null && sessionUnitId > 0) {
-            list = unitRepository.findById(sessionUnitId)
-                    .map(Collections::singletonList)
-                    .orElse(Collections.emptyList());
-        } else {
-            list = unitRepository.findAll();
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null) {
+                Long sessionUnitId = sessionData.getUnitId();
+                if (sessionUnitId != null && sessionUnitId > 0) {
+                    list = unitRepository.findById(sessionUnitId)
+                            .map(Collections::singletonList)
+                            .orElse(Collections.emptyList());
+                    return ApiResponse.success("Units retrieved successfully", list);
+                }
+            }
         }
+        list = unitRepository.findAll();
         return ApiResponse.success("Units retrieved successfully", list);
     }
 }

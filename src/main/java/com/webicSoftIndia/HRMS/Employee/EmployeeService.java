@@ -5,6 +5,7 @@ import com.webicSoftIndia.HRMS.Department.DepartmentRepository;
 import com.webicSoftIndia.HRMS.Designation.Designation;
 import com.webicSoftIndia.HRMS.Designation.DesignationRepository;
 import com.webicSoftIndia.HRMS.Employee.dto.CreateEmployeeRequest;
+import com.webicSoftIndia.HRMS.Employee.dto.EmployeeDto;
 import com.webicSoftIndia.HRMS.Grade.Grade;
 import com.webicSoftIndia.HRMS.Grade.GradeRepository;
 import com.webicSoftIndia.HRMS.Organization.Organization;
@@ -17,6 +18,7 @@ import com.webicSoftIndia.HRMS.PasswordHistory.PasswordHistoryService;
 import com.webicSoftIndia.HRMS.User.User;
 import com.webicSoftIndia.HRMS.User.UserRepository;
 import com.webicSoftIndia.HRMS.common.ApiResponse;
+import com.webicSoftIndia.HRMS.security.RedisSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +40,8 @@ public class EmployeeService {
     private final GradeRepository gradeRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisSessionService redisSessionService;
+    private final com.webicSoftIndia.HRMS.Notification.NotificationService notificationService;
 
     @Transactional
     public ApiResponse<Void> createEmployee(CreateEmployeeRequest request) {
@@ -101,6 +105,7 @@ public class EmployeeService {
                 .employeeType(request.getEmployeeType())
                 .employmentStatus(request.getEmploymentStatus())
                 .workLocation(request.getWorkLocation())
+                .noticePeriod(request.getNoticePeriodDays() != null ? request.getNoticePeriodDays() : (request.getNoticePeriod() != null ? request.getNoticePeriod() : 30))
                 .organization(organization)
                 .unit(unit)
                 .department(department)
@@ -111,6 +116,17 @@ public class EmployeeService {
                 .build();
 
         Employee savedEmployee = employeeRepository.save(employee);
+
+        // Send broadcast notification to all employees for new team member
+        try {
+            notificationService.createBroadcastNotification(
+                    "🎉 New Team Member Joined!",
+                    "Please welcome " + savedEmployee.getFirstName() + " " + savedEmployee.getLastName() + " to our team!",
+                    "NEW_JOINEE"
+            );
+        } catch (Exception e) {
+            log.error("Failed to broadcast new joinee notification: {}", e.getMessage());
+        }
 
         // Store password and user details in User entity (User & Employee unification)
         String targetUsername = (request.getUsername() != null && !request.getUsername().trim().isEmpty())
@@ -150,4 +166,129 @@ public class EmployeeService {
 
         return ApiResponse.success("Employee created successfully", null);
     }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<java.util.List<Employee>> getEmployeesBySessionUnit(String sessionId) {
+        java.util.List<Employee> list;
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                list = employeeRepository.findByUnitId(sessionData.getUnitId());
+                return ApiResponse.success("Employees retrieved successfully for unit ID: " + sessionData.getUnitId(), list);
+            }
+        }
+        list = employeeRepository.findAll();
+        return ApiResponse.success("Employees retrieved successfully", list);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<java.util.List<Employee>> getAllEmployees() {
+        return getEmployeesBySessionUnit(null);
+    }
+
+    @Transactional
+    public ApiResponse<Employee> toggleActiveStatus(Long id) {
+        if (id == null || id <= 0) {
+            return ApiResponse.error("Valid Employee ID is required");
+        }
+        Employee employee = employeeRepository.findById(id).orElse(null);
+        if (employee == null) {
+            return ApiResponse.error("Employee not found with ID: " + id);
+        }
+        boolean newStatus = !Boolean.TRUE.equals(employee.getIsActive());
+        employee.setIsActive(newStatus);
+        Employee updated = employeeRepository.save(employee);
+        return ApiResponse.success("Employee active status toggled successfully to " + newStatus, updated);
+    }
+
+    @Transactional
+    public ApiResponse<Void> deleteEmployee(Long id) {
+        if (id != null && employeeRepository.existsById(id)) {
+            employeeRepository.deleteById(id);
+            return ApiResponse.success("Employee deleted successfully", null);
+        }
+        return ApiResponse.error("Employee not found with ID: " + id);
+    }
+
+    @Transactional
+    public ApiResponse<Employee> assignShiftAndWeekOff(Long employeeId, Long shiftId, String weekOffDay1, String weekOffDay2) {
+        if (employeeId == null || employeeId <= 0) {
+            return ApiResponse.error("Valid Employee ID is required");
+        }
+        Employee employee = employeeRepository.findById(employeeId).orElse(null);
+        if (employee == null) {
+            return ApiResponse.error("Employee not found with ID: " + employeeId);
+        }
+
+        if (shiftId != null) employee.setShiftId(shiftId);
+        if (weekOffDay1 != null && !weekOffDay1.trim().isEmpty()) {
+            employee.setWeekOffDay1(weekOffDay1.trim().toUpperCase());
+        }
+        if (weekOffDay2 != null && !weekOffDay2.trim().isEmpty()) {
+            employee.setWeekOffDay2(weekOffDay2.trim().toUpperCase());
+        }
+
+        Employee saved = employeeRepository.save(employee);
+        log.info("Configured Shift ID {} and Week-Offs ({}, {}) for Employee ID {}", shiftId, weekOffDay1, weekOffDay2, employeeId);
+        return ApiResponse.success("Shift and Week-Off configured successfully for employee " + saved.getFirstName() + " " + saved.getLastName(), saved);
+    }
+
+    @Transactional
+    public ApiResponse<Employee> updateEmployeeDemographics(java.util.Map<String, Object> payload) {
+        if (payload == null) return ApiResponse.error("Payload cannot be null");
+
+        Long id = payload.get("id") != null ? Long.valueOf(payload.get("id").toString()) : null;
+        String empCode = payload.get("employeeCode") != null ? payload.get("employeeCode").toString() : null;
+
+        Employee employee = null;
+        if (id != null && id > 0) {
+            employee = employeeRepository.findById(id).orElse(null);
+        }
+        if (employee == null && empCode != null && !empCode.trim().isEmpty()) {
+            employee = employeeRepository.findByEmployeeCode(empCode.trim()).orElse(null);
+        }
+        if (employee == null) {
+            employee = employeeRepository.findAll().stream().findFirst().orElse(null);
+        }
+        if (employee == null) {
+            return ApiResponse.error("Employee profile record not found");
+        }
+
+        if (payload.get("firstName") != null) employee.setFirstName(payload.get("firstName").toString());
+        if (payload.get("middleName") != null) employee.setMiddleName(payload.get("middleName").toString());
+        if (payload.get("lastName") != null) employee.setLastName(payload.get("lastName").toString());
+        if (payload.get("gender") != null) employee.setGender(payload.get("gender").toString());
+
+        if (payload.get("bloodGroup") != null) employee.setBloodGroup(payload.get("bloodGroup").toString());
+        if (payload.get("maritalStatus") != null) employee.setMaritalStatus(payload.get("maritalStatus").toString());
+        if (payload.get("nationality") != null) employee.setNationality(payload.get("nationality").toString());
+        if (payload.get("religion") != null) employee.setReligion(payload.get("religion").toString());
+
+        if (payload.get("mobileNumber") != null) employee.setMobileNumber(payload.get("mobileNumber").toString());
+        if (payload.get("alternateMobile") != null) employee.setAlternateMobile(payload.get("alternateMobile").toString());
+        if (payload.get("email") != null) employee.setEmail(payload.get("email").toString());
+        if (payload.get("officialEmail") != null) employee.setOfficialEmail(payload.get("officialEmail").toString());
+
+        if (payload.get("emergencyContactName") != null) employee.setEmergencyContactName(payload.get("emergencyContactName").toString());
+        if (payload.get("emergencyContactNumber") != null) employee.setEmergencyContactNumber(payload.get("emergencyContactNumber").toString());
+
+        if (payload.get("aadhaarNumber") != null) employee.setAadhaarNumber(payload.get("aadhaarNumber").toString());
+        if (payload.get("panNumber") != null) employee.setPanNumber(payload.get("panNumber").toString());
+        if (payload.get("passportNumber") != null) employee.setPassportNumber(payload.get("passportNumber").toString());
+        if (payload.get("drivingLicenseNumber") != null) employee.setDrivingLicenseNumber(payload.get("drivingLicenseNumber").toString());
+
+        if (payload.get("workLocation") != null) employee.setWorkLocation(payload.get("workLocation").toString());
+        if (payload.get("profilePhoto") != null) employee.setProfilePhoto(payload.get("profilePhoto").toString());
+
+        if (payload.get("dateOfBirth") != null) {
+            try {
+                employee.setDateOfBirth(java.time.LocalDate.parse(payload.get("dateOfBirth").toString()));
+            } catch (Exception ignored) {}
+        }
+
+        Employee saved = employeeRepository.save(employee);
+        log.info("Updated demographic profile for employee [{}]", saved.getEmployeeCode());
+        return ApiResponse.success("Demographic profile updated successfully", saved);
+    }
 }
+

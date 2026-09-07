@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/leave-balances")
+@RequestMapping({"/api/v1/leave-balances", "/v1/leave-balances", "/api/v1/leave/balances", "/v1/leave/balances"})
 @RequiredArgsConstructor
 public class LeaveBalanceController {
 
@@ -52,6 +52,62 @@ public class LeaveBalanceController {
         }
 
         ApiResponse<List<LeaveBalance>> response = leaveBalanceService.getLeaveBalancesBySessionUnit(targetSessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping({"/master-data", "/overview", "/full-list"})
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getLeaveBalanceMasterData(
+            @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
+            @RequestHeader(value = "sessionId", required = false) String sessionIdParam) {
+
+        String targetSessionId = null;
+        if (xSessionId != null && !xSessionId.trim().isEmpty()) {
+            targetSessionId = xSessionId.trim();
+        } else if (sessionIdHeader != null && !sessionIdHeader.trim().isEmpty()) {
+            targetSessionId = sessionIdHeader.trim();
+        } else if (sessionIdParam != null && !sessionIdParam.trim().isEmpty()) {
+            targetSessionId = sessionIdParam.trim();
+        }
+
+        ApiResponse<java.util.Map<String, Object>> response = leaveBalanceService.getLeaveBalanceMasterData(targetSessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @RequestMapping(value = {"/my-balances", "/my"}, method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<ApiResponse<List<LeaveBalance>>> getMyLeaveBalances(
+            @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
+            @RequestHeader(value = "sessionId", required = false) String sessionIdParam) {
+
+        String targetSessionId = null;
+        if (xSessionId != null && !xSessionId.trim().isEmpty()) {
+            targetSessionId = xSessionId.trim();
+        } else if (sessionIdHeader != null && !sessionIdHeader.trim().isEmpty()) {
+            targetSessionId = sessionIdHeader.trim();
+        } else if (sessionIdParam != null && !sessionIdParam.trim().isEmpty()) {
+            targetSessionId = sessionIdParam.trim();
+        }
+
+        ApiResponse<List<LeaveBalance>> response = leaveBalanceService.getMyLeaveBalances(targetSessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping({"/batch-save", "/save-employee-balances", "/save-batch"})
+    public ResponseEntity<ApiResponse<List<LeaveBalance>>> saveBatchEmployeeBalances(@RequestBody java.util.Map<String, Object> payload) {
+        ApiResponse<List<LeaveBalance>> response = leaveBalanceService.saveBatchEmployeeBalances(payload);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {

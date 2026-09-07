@@ -90,17 +90,17 @@ public class DesignationService {
         return ApiResponse.success("Designation active status toggled successfully to " + newStatus, updated);
     }
 
+    @Transactional
+    public void deleteDesignation(Long id) {
+        if (id != null && designationRepository.existsById(id)) {
+            designationRepository.deleteById(id);
+        }
+    }
+
     @Transactional(readOnly = true)
     public ApiResponse<List<Designation>> getDesignationsBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
-        }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
         List<Designation> list = designationRepository.findAll();
         return ApiResponse.success("Designations retrieved successfully", list);
     }
 }
+

@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/holidays")
+@RequestMapping({"/api/v1/holidays", "/v1/holidays", "/api/v1/holiday", "/v1/holiday", "/holidays", "/holiday"})
 @RequiredArgsConstructor
 public class HolidayController {
 
     private final HolidayService holidayService;
 
-    @PostMapping("/create")
+    @PostMapping({"/create", "/save", "/update", "/add"})
     public ResponseEntity<ApiResponse<Holiday>> createOrUpdateHoliday(@RequestBody Holiday holiday) {
         ApiResponse<Holiday> response = holidayService.saveOrUpdateHoliday(holiday);
         if (response.isSuccess()) {
@@ -36,7 +36,7 @@ public class HolidayController {
         }
     }
 
-    @PostMapping("/list")
+    @PostMapping({"/list", "/all"})
     public ResponseEntity<ApiResponse<List<Holiday>>> listHolidays(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
             @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,

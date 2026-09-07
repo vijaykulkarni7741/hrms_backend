@@ -29,11 +29,11 @@ public class LeaveType {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
+    @JoinColumn(name = "organization_id", nullable = true)
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id", nullable = false)
+    @JoinColumn(name = "unit_id", nullable = true)
     private Unit unit;
 
     @Column(name = "type_name", nullable = false, length = 100)
@@ -44,6 +44,14 @@ public class LeaveType {
 
     @Column(name = "description", length = 255)
     private String description;
+
+    @Builder.Default
+    @Column(name = "max_days_per_year")
+    private Integer maxDaysPerYear = 12;
+
+    @Builder.Default
+    @Column(name = "is_carry_forward_allowed")
+    private Boolean isCarryForwardAllowed = true;
 
     @Builder.Default
     @Column(name = "is_paid", nullable = false)

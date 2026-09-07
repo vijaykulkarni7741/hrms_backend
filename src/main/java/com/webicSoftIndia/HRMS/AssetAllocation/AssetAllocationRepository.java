@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface AssetAllocationRepository extends JpaRepository<AssetAllocation, Long> {
     List<AssetAllocation> findByUnitId(Long unitId);
+    List<AssetAllocation> findByEmployeeId(Long employeeId);
 }

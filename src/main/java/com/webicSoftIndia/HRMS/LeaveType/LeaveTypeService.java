@@ -1,6 +1,10 @@
 package com.webicSoftIndia.HRMS.LeaveType;
 
 import com.webicSoftIndia.HRMS.Employee.dto.EmployeeDto;
+import com.webicSoftIndia.HRMS.Organization.Organization;
+import com.webicSoftIndia.HRMS.Organization.OrganizationRepository;
+import com.webicSoftIndia.HRMS.Unit.Unit;
+import com.webicSoftIndia.HRMS.Unit.UnitRepository;
 import com.webicSoftIndia.HRMS.common.ApiResponse;
 import com.webicSoftIndia.HRMS.security.RedisSessionService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +20,8 @@ import java.util.List;
 public class LeaveTypeService {
 
     private final LeaveTypeRepository leaveTypeRepository;
+    private final OrganizationRepository organizationRepository;
+    private final UnitRepository unitRepository;
     private final RedisSessionService redisSessionService;
 
     @Transactional
@@ -33,6 +39,8 @@ public class LeaveTypeService {
             if (leaveType.getTypeName() != null) existing.setTypeName(leaveType.getTypeName());
             if (leaveType.getTypeCode() != null) existing.setTypeCode(leaveType.getTypeCode());
             if (leaveType.getDescription() != null) existing.setDescription(leaveType.getDescription());
+            if (leaveType.getMaxDaysPerYear() != null) existing.setMaxDaysPerYear(leaveType.getMaxDaysPerYear());
+            if (leaveType.getIsCarryForwardAllowed() != null) existing.setIsCarryForwardAllowed(leaveType.getIsCarryForwardAllowed());
             if (leaveType.getIsPaid() != null) existing.setIsPaid(leaveType.getIsPaid());
             if (leaveType.getStatus() != null) existing.setStatus(leaveType.getStatus());
             if (leaveType.getIsActive() != null) existing.setIsActive(leaveType.getIsActive());
@@ -44,12 +52,39 @@ public class LeaveTypeService {
         if (leaveType.getTypeName() == null || leaveType.getTypeName().trim().isEmpty()) {
             return ApiResponse.error("Type name is required");
         }
+        if (leaveType.getTypeCode() == null || leaveType.getTypeCode().trim().isEmpty()) {
+            leaveType.setTypeCode(leaveType.getTypeName().substring(0, Math.min(3, leaveType.getTypeName().length())).toUpperCase());
+        }
 
+        if (leaveType.getOrganization() == null) {
+            Organization defaultOrg = organizationRepository.findAll().stream().findFirst().orElse(null);
+            leaveType.setOrganization(defaultOrg);
+        }
+        if (leaveType.getUnit() == null) {
+            Unit defaultUnit = unitRepository.findAll().stream().findFirst().orElse(null);
+            leaveType.setUnit(defaultUnit);
+        }
+
+        if (leaveType.getMaxDaysPerYear() == null) leaveType.setMaxDaysPerYear(12);
+        if (leaveType.getIsCarryForwardAllowed() == null) leaveType.setIsCarryForwardAllowed(true);
         if (leaveType.getStatus() == null) leaveType.setStatus("ACTIVE");
         if (leaveType.getIsActive() == null) leaveType.setIsActive(true);
+        if (leaveType.getIsPaid() == null) leaveType.setIsPaid(true);
 
         LeaveType saved = leaveTypeRepository.save(leaveType);
         return ApiResponse.success("LeaveType created successfully", saved);
+    }
+
+    @Transactional
+    public ApiResponse<Void> deleteLeaveType(Long id) {
+        if (id == null || id <= 0) {
+            return ApiResponse.error("Valid LeaveType ID is required");
+        }
+        if (!leaveTypeRepository.existsById(id)) {
+            return ApiResponse.error("LeaveType not found with ID: " + id);
+        }
+        leaveTypeRepository.deleteById(id);
+        return ApiResponse.success("LeaveType deleted successfully", null);
     }
 
     @Transactional
@@ -73,11 +108,11 @@ public class LeaveTypeService {
     @Transactional(readOnly = true)
     public ApiResponse<List<LeaveType>> getLeaveTypesBySessionUnit(String sessionId) {
         if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
+            return ApiResponse.success("Retrieved all leave types", leaveTypeRepository.findAll());
         }
         EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
         if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
+            return ApiResponse.success("Retrieved all leave types", leaveTypeRepository.findAll());
         }
 
         Long unitId = sessionData.getUnitId();

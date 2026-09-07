@@ -2,6 +2,7 @@ package com.webicSoftIndia.HRMS.Department;
 
 import com.webicSoftIndia.HRMS.common.ApiResponse;
 import com.webicSoftIndia.HRMS.common.IdRequest;
+import com.webicSoftIndia.HRMS.common.PageRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,13 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/departments")
+@RequestMapping({"/api/v1/departments", "/v1/departments", "/api/v1/department", "/v1/department"})
 @RequiredArgsConstructor
 public class DepartmentController {
 
     private final DepartmentService departmentService;
 
-    @PostMapping("/create")
+    @PostMapping({"/create", "/save", "/update"})
     public ResponseEntity<ApiResponse<Department>> createOrUpdateDepartment(@RequestBody Department department) {
         ApiResponse<Department> response = departmentService.saveOrUpdateDepartment(department);
         if (response.isSuccess()) {
@@ -23,6 +24,16 @@ public class DepartmentController {
         } else {
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse<Void>> deleteDepartment(@RequestBody IdRequest request) {
+        Long id = request != null ? request.getId() : null;
+        if (id != null) {
+            departmentService.deleteDepartment(id);
+            return ResponseEntity.ok(ApiResponse.success("Department deleted successfully", null));
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.error("Valid ID is required"));
     }
 
     @PostMapping("/toggle-active")
@@ -36,11 +47,12 @@ public class DepartmentController {
         }
     }
 
-    @PostMapping("/list")
+    @PostMapping({"/list", "/get-all"})
     public ResponseEntity<ApiResponse<List<Department>>> listDepartments(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
             @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
-            @RequestHeader(value = "sessionId", required = false) String sessionIdParam) {
+            @RequestHeader(value = "sessionId", required = false) String sessionIdParam,
+            @RequestBody(required = false) PageRequestDto pageRequest) {
 
         String targetSessionId = null;
         if (xSessionId != null && !xSessionId.trim().isEmpty()) {
@@ -52,10 +64,6 @@ public class DepartmentController {
         }
 
         ApiResponse<List<Department>> response = departmentService.getDepartmentsBySessionUnit(targetSessionId);
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+        return ResponseEntity.ok(response);
     }
 }

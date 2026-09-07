@@ -4,6 +4,7 @@ import com.webicSoftIndia.HRMS.Employee.Employee;
 import com.webicSoftIndia.HRMS.LeaveType.LeaveType;
 import com.webicSoftIndia.HRMS.Organization.Organization;
 import com.webicSoftIndia.HRMS.Unit.Unit;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,18 +36,22 @@ public class LeaveApplication {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Unit unit;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Employee employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leave_type_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private LeaveType leaveType;
 
     @Column(name = "start_date", nullable = false)
@@ -60,6 +65,20 @@ public class LeaveApplication {
 
     @Column(name = "reason", length = 500)
     private String reason;
+
+    @Column(name = "reporting_manager_id")
+    private Long reportingManagerId;
+
+    @Builder.Default
+    @Column(name = "reporting_manager_status", length = 30)
+    private String reportingManagerStatus = "PENDING";
+
+    @Column(name = "working_manager_id")
+    private Long workingManagerId;
+
+    @Builder.Default
+    @Column(name = "working_manager_status", length = 30)
+    private String workingManagerStatus = "PENDING";
 
     @Column(name = "status", nullable = false, length = 30)
     private String status;

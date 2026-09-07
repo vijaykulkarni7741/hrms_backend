@@ -7,17 +7,38 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/resignations")
+@RequestMapping({
+        "/api/v1/resignations",
+        "/v1/resignations",
+        "/resignations",
+        "/resignation"
+})
 @RequiredArgsConstructor
 public class ResignationController {
 
     private final ResignationService resignationService;
 
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Resignation>> createOrUpdateResignation(@RequestBody Resignation resignation) {
-        ApiResponse<Resignation> response = resignationService.saveOrUpdateResignation(resignation);
+    @PostMapping({"/submit", "/create", "/save"})
+    public ResponseEntity<ApiResponse<Resignation>> submitResignation(
+            @RequestBody Map<String, Object> payload,
+            @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader) {
+
+        String sessionId = xSessionId != null ? xSessionId : sessionIdHeader;
+        ApiResponse<Resignation> response = resignationService.submitResignationFromMap(payload, sessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping({"/approve-reject", "/approve", "/process"})
+    public ResponseEntity<ApiResponse<Resignation>> approveOrRejectResignation(@RequestBody Map<String, Object> payload) {
+        ApiResponse<Resignation> response = resignationService.approveOrRejectResignation(payload);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
@@ -36,22 +57,35 @@ public class ResignationController {
         }
     }
 
-    @PostMapping("/list")
+    @PostMapping({"/list", "/queue", "/approval-queue", "/all"})
     public ResponseEntity<ApiResponse<List<Resignation>>> listResignations(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
-            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
-            @RequestHeader(value = "sessionId", required = false) String sessionIdParam) {
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader) {
 
-        String targetSessionId = null;
-        if (xSessionId != null && !xSessionId.trim().isEmpty()) {
-            targetSessionId = xSessionId.trim();
-        } else if (sessionIdHeader != null && !sessionIdHeader.trim().isEmpty()) {
-            targetSessionId = sessionIdHeader.trim();
-        } else if (sessionIdParam != null && !sessionIdParam.trim().isEmpty()) {
-            targetSessionId = sessionIdParam.trim();
+        String targetSessionId = xSessionId != null ? xSessionId : sessionIdHeader;
+        ApiResponse<List<Resignation>> response = resignationService.getResignationsBySessionUnit(targetSessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping({"/my-resignations", "/my", "/employee-resignations"})
+    public ResponseEntity<ApiResponse<List<Resignation>>> getMyResignations(
+            @RequestBody(required = false) Map<String, Object> payload,
+            @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader) {
+
+        Long empId = null;
+        if (payload != null && payload.get("employeeId") != null) {
+            try {
+                empId = Long.valueOf(payload.get("employeeId").toString());
+            } catch (Exception ignored) {}
         }
 
-        ApiResponse<List<Resignation>> response = resignationService.getResignationsBySessionUnit(targetSessionId);
+        String targetSessionId = xSessionId != null ? xSessionId : sessionIdHeader;
+        ApiResponse<List<Resignation>> response = resignationService.getResignationsByEmployee(empId, targetSessionId);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {

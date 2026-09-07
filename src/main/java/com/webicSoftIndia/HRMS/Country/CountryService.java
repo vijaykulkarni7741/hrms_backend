@@ -95,14 +95,12 @@ public class CountryService {
 
     @Transactional(readOnly = true)
     public ApiResponse<List<Country>> getCountriesBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                // Return all countries for now as countries are global
+            }
         }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
         List<Country> list = countryRepository.findAll();
         return ApiResponse.success("Countries retrieved successfully", list);
     }

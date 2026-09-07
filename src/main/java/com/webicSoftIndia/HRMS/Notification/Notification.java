@@ -1,5 +1,6 @@
 package com.webicSoftIndia.HRMS.Notification;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.webicSoftIndia.HRMS.Employee.Employee;
 import com.webicSoftIndia.HRMS.Organization.Organization;
 import com.webicSoftIndia.HRMS.Unit.Unit;
@@ -30,15 +31,18 @@ public class Notification {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
+    @JoinColumn(name = "organization_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id", nullable = false)
+    @JoinColumn(name = "unit_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Unit unit;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id", nullable = false)
+    @JoinColumn(name = "recipient_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Employee recipient;
 
     @Column(name = "title", nullable = false, length = 200)
@@ -51,14 +55,22 @@ public class Notification {
     private String type;
 
     @Builder.Default
+    @Column(name = "scope", length = 30)
+    private String scope = "PRIVATE"; // PRIVATE or BROADCAST
+
+    @Column(name = "category", length = 50)
+    private String category;
+
+    @Builder.Default
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    @Builder.Default
     @Column(name = "status", nullable = false, length = 30)
-    private String status;
+    private String status = "UNREAD";
 
     @Builder.Default
     @Column(name = "is_active", nullable = false)

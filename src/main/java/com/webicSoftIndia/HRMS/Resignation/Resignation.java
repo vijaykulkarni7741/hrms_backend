@@ -59,6 +59,22 @@ public class Resignation {
     private String status;
 
     @Builder.Default
+    @Column(name = "requires_work_manager_approval")
+    private Boolean requiresWorkManagerApproval = true;
+
+    @Column(name = "work_manager_status", length = 30)
+    private String workManagerStatus;
+
+    @Column(name = "reporting_manager_status", length = 30)
+    private String reportingManagerStatus;
+
+    @Column(name = "hr_status", length = 30)
+    private String hrStatus;
+
+    @Column(name = "comments", length = 500)
+    private String comments;
+
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

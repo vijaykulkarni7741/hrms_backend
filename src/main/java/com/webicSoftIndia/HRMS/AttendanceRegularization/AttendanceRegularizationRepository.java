@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface AttendanceRegularizationRepository extends JpaRepository<AttendanceRegularization, Long> {
     List<AttendanceRegularization> findByEmployeeId(Long employeeId);
+    List<AttendanceRegularization> findByEmployeeIdOrderByCreatedDateDesc(Long employeeId);
+    List<AttendanceRegularization> findByStatus(String status);
 }

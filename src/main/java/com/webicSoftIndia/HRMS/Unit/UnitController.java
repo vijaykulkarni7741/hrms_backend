@@ -2,6 +2,7 @@ package com.webicSoftIndia.HRMS.Unit;
 
 import com.webicSoftIndia.HRMS.common.ApiResponse;
 import com.webicSoftIndia.HRMS.common.IdRequest;
+import com.webicSoftIndia.HRMS.common.PageRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/units")
+@RequestMapping({"/api/v1/units", "/v1/units", "/api/v1/admin/units", "/v1/admin/units", "/admin/units", "/api/v1/branches", "/v1/branches", "/api/v1/admin/branches", "/v1/admin/branches", "/admin/branches"})
 @RequiredArgsConstructor
 public class UnitController {
 
@@ -40,7 +41,8 @@ public class UnitController {
     public ResponseEntity<ApiResponse<List<Unit>>> listUnits(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
             @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
-            @RequestHeader(value = "sessionId", required = false) String sessionIdParam) {
+            @RequestHeader(value = "sessionId", required = false) String sessionIdParam,
+            @RequestBody(required = false) PageRequestDto pageRequest) {
 
         String targetSessionId = null;
         if (xSessionId != null && !xSessionId.trim().isEmpty()) {

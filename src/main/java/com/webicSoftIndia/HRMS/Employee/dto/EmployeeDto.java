@@ -28,8 +28,10 @@ public class EmployeeDto implements Serializable {
     private String employmentStatus;
     private Long organizationId;
     private String organizationName;
+    private String organizationLogo;
     private Long unitId;
     private String unitName;
+    private String unitLogo;
     private Long departmentId;
     private String departmentName;
     private Long designationId;
@@ -39,7 +41,14 @@ public class EmployeeDto implements Serializable {
     private Long roleId;
     private String roleCode;
     private String roleName;
+    private Long managerId;
+    private Long reportingManagerId;
+    private Long workingManagerId;
     private String workLocation;
+    private String weekOffDay1;
+    private String weekOffDay2;
+    private Integer noticePeriod;
+    private Integer noticePeriodDays;
     private Boolean isActive;
     private String token;
 
@@ -70,9 +79,11 @@ public class EmployeeDto implements Serializable {
 
                 .organizationId(employee.getOrganization() != null ? employee.getOrganization().getId() : null)
                 .organizationName(employee.getOrganization() != null ? employee.getOrganization().getOrganizationName() : null)
+                .organizationLogo(employee.getOrganization() != null ? employee.getOrganization().getCompanyLogo() : null)
 
                 .unitId(employee.getUnit() != null ? employee.getUnit().getId() : null)
                 .unitName(employee.getUnit() != null ? employee.getUnit().getUnitName() : null)
+                .unitLogo(employee.getOrganization() != null ? employee.getOrganization().getCompanyLogo() : null)
 
                 .departmentId(employee.getDepartment() != null ? employee.getDepartment().getId() : null)
                 .departmentName(employee.getDepartment() != null ? employee.getDepartment().getDepartmentName() : null)
@@ -87,7 +98,15 @@ public class EmployeeDto implements Serializable {
                 .roleCode(employee.getRole() != null ? employee.getRole().getRoleCode() : null)
                 .roleName(employee.getRole() != null ? employee.getRole().getRoleName() : null)
 
+                .managerId(employee.getManagerId())
+                .reportingManagerId(employee.getReportingManagerId())
+                .workingManagerId(employee.getWorkingManagerId() != null ? employee.getWorkingManagerId() : employee.getManagerId())
+
                 .workLocation(employee.getWorkLocation())
+                .weekOffDay1(employee.getWeekOffDay1())
+                .weekOffDay2(employee.getWeekOffDay2())
+                .noticePeriod(employee.getNoticePeriod())
+                .noticePeriodDays(employee.getNoticePeriod())
                 .isActive(employee.getIsActive())
                 .build();
 

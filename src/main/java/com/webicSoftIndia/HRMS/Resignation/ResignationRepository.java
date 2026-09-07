@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ResignationRepository extends JpaRepository<Resignation, Long> {
     List<Resignation> findByUnitId(Long unitId);
+    List<Resignation> findByEmployeeId(Long employeeId);
 }

@@ -1,5 +1,7 @@
 package com.webicSoftIndia.HRMS.AttendanceApproval;
 
+import com.webicSoftIndia.HRMS.AttendanceRegularization.AttendanceRegularizationService;
+import com.webicSoftIndia.HRMS.AttendanceRegularization.dto.RegularizationApprovalRequest;
 import com.webicSoftIndia.HRMS.Employee.dto.EmployeeDto;
 import com.webicSoftIndia.HRMS.common.ApiResponse;
 import com.webicSoftIndia.HRMS.security.RedisSessionService;
@@ -8,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -16,6 +19,7 @@ import java.util.List;
 public class AttendanceApprovalService {
 
     private final AttendanceApprovalRepository approvalRepository;
+    private final AttendanceRegularizationService regularizationService;
     private final RedisSessionService redisSessionService;
 
     @Transactional
@@ -38,9 +42,23 @@ public class AttendanceApprovalService {
             }
             if (approval.getActionDate() != null) {
                 existing.setActionDate(approval.getActionDate());
+            } else {
+                existing.setActionDate(LocalDateTime.now());
             }
 
             AttendanceApproval updated = approvalRepository.save(existing);
+
+            if ("REGULARIZATION".equalsIgnoreCase(updated.getReferenceType()) && updated.getReferenceId() != null
+                    && ("APPROVED".equalsIgnoreCase(updated.getStatus()) || "REJECTED".equalsIgnoreCase(updated.getStatus()))) {
+                RegularizationApprovalRequest req = RegularizationApprovalRequest.builder()
+                        .id(updated.getReferenceId())
+                        .status(updated.getStatus())
+                        .remarks(updated.getComments())
+                        .approverId(updated.getApprover() != null ? updated.getApprover().getId() : null)
+                        .build();
+                regularizationService.processRegularizationApproval(req, null);
+            }
+
             return ApiResponse.success("AttendanceApproval updated successfully", updated);
         }
 
@@ -55,6 +73,18 @@ public class AttendanceApprovalService {
         }
 
         AttendanceApproval saved = approvalRepository.save(approval);
+
+        if ("REGULARIZATION".equalsIgnoreCase(saved.getReferenceType()) && saved.getReferenceId() != null
+                && ("APPROVED".equalsIgnoreCase(saved.getStatus()) || "REJECTED".equalsIgnoreCase(saved.getStatus()))) {
+            RegularizationApprovalRequest req = RegularizationApprovalRequest.builder()
+                    .id(saved.getReferenceId())
+                    .status(saved.getStatus())
+                    .remarks(saved.getComments())
+                    .approverId(saved.getApprover() != null ? saved.getApprover().getId() : null)
+                    .build();
+            regularizationService.processRegularizationApproval(req, null);
+        }
+
         return ApiResponse.success("AttendanceApproval created successfully", saved);
     }
 

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/leaves")
+@RequestMapping({"/api/v1/leaves", "/v1/leaves", "/api/v1/leave", "/v1/leave"})
 @RequiredArgsConstructor
 public class LeaveController {
 

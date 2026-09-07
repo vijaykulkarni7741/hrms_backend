@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(
         name = "attendance_records",
@@ -37,10 +39,12 @@ public class Attendance {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false, foreignKey = @ForeignKey(name = "fk_att_employee"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Employee employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", foreignKey = @ForeignKey(name = "fk_att_unit"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Unit unit;
 
     @Column(name = "attendance_date", nullable = false)
@@ -48,6 +52,7 @@ public class Attendance {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shift_id", foreignKey = @ForeignKey(name = "fk_att_shift"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Shift shift;
 
     @Column(name = "in_time")
@@ -55,6 +60,18 @@ public class Attendance {
 
     @Column(name = "out_time")
     private LocalTime outTime;
+
+    @Column(name = "check_in_selfie", columnDefinition = "TEXT")
+    private String checkInSelfie;
+
+    @Column(name = "check_out_selfie", columnDefinition = "TEXT")
+    private String checkOutSelfie;
+
+    @Column(name = "check_in_location", length = 200)
+    private String checkInLocation;
+
+    @Column(name = "check_out_location", length = 200)
+    private String checkOutLocation;
 
     @Column(name = "total_hours", precision = 4, scale = 2)
     private BigDecimal totalHours;

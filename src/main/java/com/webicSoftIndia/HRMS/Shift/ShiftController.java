@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/shifts")
+@RequestMapping({"/api/v1/shifts", "/v1/shifts", "/api/v1/shift", "/v1/shift", "/shifts", "/shift"})
 @RequiredArgsConstructor
 public class ShiftController {
 
     private final ShiftService shiftService;
 
-    @PostMapping("/create")
+    @PostMapping({"/create", "/save", "/update", "/add"})
     public ResponseEntity<ApiResponse<Shift>> createOrUpdateShift(@RequestBody Shift shift) {
         ApiResponse<Shift> response = shiftService.saveOrUpdateShift(shift);
         if (response.isSuccess()) {
@@ -36,7 +36,7 @@ public class ShiftController {
         }
     }
 
-    @PostMapping("/list")
+    @PostMapping({"/list", "/all"})
     public ResponseEntity<ApiResponse<List<Shift>>> listShifts(
             @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
             @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,

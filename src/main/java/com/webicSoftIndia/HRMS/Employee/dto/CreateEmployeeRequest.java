@@ -28,4 +28,6 @@ public class CreateEmployeeRequest {
     private Long designationId;
     private Long gradeId;
     private Long roleId;
+    private Integer noticePeriod;
+    private Integer noticePeriodDays;
 }

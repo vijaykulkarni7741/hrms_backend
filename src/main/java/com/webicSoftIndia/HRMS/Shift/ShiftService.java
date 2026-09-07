@@ -132,22 +132,17 @@ public class ShiftService {
 
     @Transactional(readOnly = true)
     public ApiResponse<List<Shift>> getShiftsBySessionUnit(String sessionId) {
-        if (sessionId == null || sessionId.trim().isEmpty()) {
-            return ApiResponse.error("Session ID header is required");
-        }
-        EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
-        if (sessionData == null) {
-            return ApiResponse.error("Invalid or expired session in Redis");
-        }
-
-        Long unitId = sessionData.getUnitId();
         List<Shift> list;
-        if (unitId != null && unitId > 0) {
-            list = shiftRepository.findByUnitId(unitId);
-        } else {
-            list = shiftRepository.findAll();
+        if (sessionId != null && !sessionId.trim().isEmpty()) {
+            EmployeeDto sessionData = redisSessionService.getSession(sessionId.trim());
+            if (sessionData != null && sessionData.getUnitId() != null && sessionData.getUnitId() > 0) {
+                list = shiftRepository.findByUnitId(sessionData.getUnitId());
+                return ApiResponse.success("Shifts retrieved successfully for unit ID: " + sessionData.getUnitId(), list);
+            }
         }
+        list = shiftRepository.findAll();
         return ApiResponse.success("Shifts retrieved successfully", list);
     }
 }
+
 
