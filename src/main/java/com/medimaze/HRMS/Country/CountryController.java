@@ -1,0 +1,64 @@
+package com.medimaze.HRMS.Country;
+
+import com.medimaze.HRMS.common.ApiResponse;
+import com.medimaze.HRMS.common.IdRequest;
+import com.medimaze.HRMS.common.PageRequestDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping({"/api/v1/countries", "/v1/countries"})
+@RequiredArgsConstructor
+public class CountryController {
+
+    private final CountryService countryService;
+
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<Country>> createOrUpdateCountry(@RequestBody Country country) {
+        ApiResponse<Country> response = countryService.saveOrUpdateCountry(country);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/toggle-active")
+    public ResponseEntity<ApiResponse<Country>> toggleActiveStatus(@RequestBody IdRequest request) {
+        Long id = request != null ? request.getId() : null;
+        ApiResponse<Country> response = countryService.toggleActiveStatus(id);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/list")
+    public ResponseEntity<ApiResponse<List<Country>>> listCountries(
+            @RequestHeader(value = "X-Session-ID", required = false) String xSessionId,
+            @RequestHeader(value = "Session-ID", required = false) String sessionIdHeader,
+            @RequestHeader(value = "sessionId", required = false) String sessionIdParam,
+            @RequestBody(required = false) PageRequestDto pageRequest) {
+
+        String targetSessionId = null;
+        if (xSessionId != null && !xSessionId.trim().isEmpty()) {
+            targetSessionId = xSessionId.trim();
+        } else if (sessionIdHeader != null && !sessionIdHeader.trim().isEmpty()) {
+            targetSessionId = sessionIdHeader.trim();
+        } else if (sessionIdParam != null && !sessionIdParam.trim().isEmpty()) {
+            targetSessionId = sessionIdParam.trim();
+        }
+
+        ApiResponse<List<Country>> response = countryService.getCountriesBySessionUnit(targetSessionId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+}
+
